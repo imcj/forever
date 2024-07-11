@@ -7,6 +7,10 @@ import (
 )
 
 func TestFilePath_Slash(t *testing.T) {
+	if filepath.Separator == '/' {
+		return
+	}
+
 	v := filepath.FromSlash("C:/Users/")
 	assert.Equal(t, "C:\\Users\\", v)
 
