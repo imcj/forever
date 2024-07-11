@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    name: Build and Release
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [windows, linux, parry]
+        arch: [amd64, nail]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.22" # or whichever version you prefer
+
+      - name: Build for ${{ matrix.os }} (${{ matrix.arch }})
+        run: GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o forever-${{ matrix.os }}-${{ matrix.arch }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Description of the release.
+          draft: false
+          prerelease: false
+
+      - name: Upload ${{ matrix.os }} (${{ matrix.arch }}) binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: forever-${{ matrix.os }}-${{ matrix.arch }}
+          path: ./forever-${{ matrix.os }}-${{ matrix.arch }}
+
+      - name: Upload Release Binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ github.workspace }}/forever-${{ matrix.os }}-${{ matrix.arch }}
+          asset_name: forever-${{ matrix.os }}-${{ matrix.arch }}
+          asset_content_type: application/octet-stream

@@ -14,10 +14,10 @@ func TestTask_Execute(t *testing.T) {
 
 	t.Logf("working dir: %s", workingDir)
 	assert.Nil(t, err)
-	task, err := NewTask(TaskConfig{
-		Command:    filepath.Join(".\\sleep\\main.exe"),
+	task, err := NewTask(&TaskConfig{
+		Command:    Path(filepath.Join(".\\sleep\\main.exe")),
 		Arguments:  []string{},
-		Directory:  filepath.Join(workingDir, ".\\"),
+		Directory:  Path(filepath.Join(workingDir, ".\\")),
 		OutputPath: filepath.Join(workingDir, "\\logs\\output.log"),
 		ErrorPath:  filepath.Join(workingDir, "\\logs\\error.log"),
 	})
