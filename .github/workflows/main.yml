@@ -47,6 +47,7 @@ jobs:
             Description of the release.
           draft: false
           prerelease: false
+        continue-on-error: true
 
       - name: Upload ${{ matrix.os }} (${{ matrix.arch }}) binary
         uses: actions/upload-artifact@v2
