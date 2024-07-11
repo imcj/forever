@@ -2,10 +2,12 @@ package task
 
 import (
 	"bufio"
+	"errors"
 	"github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 type Task struct {
@@ -40,6 +42,9 @@ func (task *Task) ReadError() {
 }
 
 func (task *Task) PipeToFile(scanner *bufio.Scanner, file *os.File) {
+	if file == nil {
+		return
+	}
 	for scanner.Scan() {
 		line := scanner.Text()
 		logrus.Info(line)
@@ -61,6 +66,26 @@ func (task *Task) Kill() error {
 	return task.Cmd.Process.Kill()
 }
 
+func OpenLoggingFile(path string) (*os.File, error) {
+	if path == "" {
+		return nil, errors.New("path is nil")
+	}
+	dir := filepath.Dir(path)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err := os.MkdirAll(path, os.ModePerm)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
+}
+
 func NewTask(cmd *TaskConfig) (*Task, error) {
 	c := cmd.Command.String()
 	command := exec.Command(c, cmd.Arguments...)
@@ -79,29 +104,8 @@ func NewTask(cmd *TaskConfig) (*Task, error) {
 		return nil, err
 	}
 
-	var outputFile *os.File = nil
-	for {
-		if cmd.OutputPath == "" {
-			break
-		}
-		outputFile, err = os.OpenFile(cmd.OutputPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-		if err != nil {
-			logrus.Warnf("Failed to open output file: %v", err)
-		}
-		break
-	}
-
-	var errorFile *os.File = nil
-	for {
-		if cmd.ErrorPath == "" {
-			break
-		}
-		errorFile, err = os.OpenFile(cmd.ErrorPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-		if err != nil {
-			logrus.Warnf("Failed to open error file: %v", err)
-		}
-		break
-	}
+	outputFile, err := OpenLoggingFile(cmd.OutputPath)
+	errorFile, err := OpenLoggingFile(cmd.ErrorPath)
 
 	return &Task{
 		Cmd:        command,

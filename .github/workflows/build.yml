@@ -2,11 +2,20 @@ name: Go
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - "*"
+    tags:
+      - "*"
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [ windows, linux ]
+        arch: [ amd64 ]
+
     steps:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
@@ -23,6 +32,8 @@ jobs:
             ${{ runner.os }}-go-
       - name: Get dependencies
         run: go mod download
+      - name: Build sleep
+        run: go build -o sleep ./sleep/sleep.go
       - name: Build
         run: go build -v ./...
       - name: Test

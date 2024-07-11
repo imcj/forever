@@ -10,16 +10,16 @@ import (
 
 func TestTask_Execute(t *testing.T) {
 	workingDir, err := os.Getwd()
-	workingDir = filepath.Join(workingDir, "..\\")
+	workingDir = filepath.Join(workingDir, "../")
 
 	t.Logf("working dir: %s", workingDir)
 	assert.Nil(t, err)
 	task, err := NewTask(&TaskConfig{
-		Command:    Path(filepath.Join(".\\sleep\\main.exe")),
+		Command:    Path(filepath.Join("./sleep/sleep")),
 		Arguments:  []string{},
-		Directory:  Path(filepath.Join(workingDir, ".\\")),
-		OutputPath: filepath.Join(workingDir, "\\logs\\output.log"),
-		ErrorPath:  filepath.Join(workingDir, "\\logs\\error.log"),
+		Directory:  Path(filepath.Join(workingDir, "./")),
+		OutputPath: filepath.Join(workingDir, "./logs/output.log"),
+		ErrorPath:  filepath.Join(workingDir, "./logs/error.log"),
 	})
 
 	assert.Nil(t, err)
