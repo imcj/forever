@@ -12,8 +12,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [windows, linux, parry]
-        arch: [amd64, nail]
+        os: [windows, linux]
+        arch: [amd64]
 
     steps:
       - name: Checkout code
