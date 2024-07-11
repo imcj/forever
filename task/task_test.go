@@ -16,7 +16,7 @@ func TestTask_Execute(t *testing.T) {
 	assert.Nil(t, err)
 	task, err := NewTask(&TaskConfig{
 		Command:    Path(filepath.Join("./sleep/sleep")),
-		Arguments:  []string{},
+		Arguments:  []string{"--arg1"},
 		Directory:  Path(filepath.Join(workingDir, "./")),
 		OutputPath: filepath.Join(workingDir, "./logs/output.log"),
 		ErrorPath:  filepath.Join(workingDir, "./logs/error.log"),

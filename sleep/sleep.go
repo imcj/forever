@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	fmt.Println(os.Args[1:])
 	for {
 		time.Sleep(1 * time.Second)
 		fmt.Println("Tick")
