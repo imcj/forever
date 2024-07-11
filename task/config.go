@@ -3,6 +3,7 @@ package task
 import (
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -20,7 +21,7 @@ type TaskConfig struct {
 }
 
 func LoadConfig(path string) (*Config, error) {
-	config := &Config{}
+
 	working, err := os.Getwd()
 	if err != nil {
 		return nil, err
@@ -38,10 +39,17 @@ func LoadConfig(path string) (*Config, error) {
 			logrus.Warnf("Error closing file: %v", err)
 		}
 	}(file)
-	decoder := yaml.NewDecoder(file)
-	err = decoder.Decode(config)
+
+	return LoadConfigText(file)
+}
+
+func LoadConfigText(reader io.Reader) (*Config, error) {
+	config := &Config{}
+	decoder := yaml.NewDecoder(reader)
+	err := decoder.Decode(config)
 	if err != nil {
 		return nil, err
 	}
+
 	return config, nil
 }
