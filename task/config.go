@@ -18,6 +18,7 @@ type TaskConfig struct {
 	OutputPath string   `yaml:"output"`
 	ErrorPath  string   `yaml:"error"`
 	Directory  Path     `yaml:"directory"`
+	Autostart  *bool    `yaml:"autostart"`
 }
 
 func LoadConfig(path string) (*Config, error) {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"forever/forever"
 	"forever/task"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -32,13 +33,13 @@ func main() {
 				return
 			}
 
-			runner, err := task.NewRunner(cfg)
+			runner, err := forever.NewRunner(cfg)
 			if err != nil {
 				logrus.Errorf("new runner err: %v", err)
 				return
 			}
 
-			runner.Run()
+			runner.Start()
 		},
 	}
 

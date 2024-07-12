@@ -17,18 +17,29 @@ type Task struct {
 	Error      io.ReadCloser
 	outputFile *os.File
 	errorFile  *os.File
+
+	Autostart bool
+}
+
+func (task *Task) Start(cycle ForeverLifeCycle) error {
+	if cycle == ForeverLifeCycleStart && task.Autostart == false {
+		logrus.Infof("Task %s is not set to autostart", task.Cmd.Path)
+		return nil
+	}
+	return task.Execute()
 }
 
 func (task *Task) Execute() error {
 	err := task.Cmd.Start()
-	logrus.Debugf("Task started with pid: %d", task.Cmd.Process.Pid)
 
 	if err != nil {
 		return err
 	}
 	go task.ReadOutput()
 	go task.ReadError()
+
 	task.ProcessId = task.Cmd.Process.Pid
+	logrus.Debugf("Task started with pid: %d", task.Cmd.Process.Pid)
 
 	return nil
 }
@@ -69,6 +80,10 @@ func (task *Task) Kill() error {
 	return task.Cmd.Process.Kill()
 }
 
+func (task *Task) Stop() error {
+	return task.Kill()
+}
+
 func OpenLoggingFile(path string) (*os.File, error) {
 	if path == "" {
 		return nil, errors.New("path is nil")
@@ -90,7 +105,7 @@ func OpenLoggingFile(path string) (*os.File, error) {
 }
 
 func NewTask(cmd *TaskConfig) (*Task, error) {
-	c := cmd.Command.String()
+	c := cmd.Command.CommandPath(cmd.Directory).String()
 	command := exec.Command(c, cmd.Arguments...)
 
 	if cmd.Directory != "" {
@@ -115,6 +130,11 @@ func NewTask(cmd *TaskConfig) (*Task, error) {
 
 	logrus.Debugf("Task running: %s", c)
 
+	autostart := true
+	if cmd.Autostart != nil {
+		autostart = *cmd.Autostart
+	}
+
 	return &Task{
 		Cmd:        command,
 		Output:     output,
@@ -122,5 +142,6 @@ func NewTask(cmd *TaskConfig) (*Task, error) {
 		ProcessId:  0,
 		outputFile: outputFile,
 		errorFile:  errorFile,
+		Autostart:  autostart,
 	}, nil
 }
