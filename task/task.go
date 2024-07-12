@@ -21,6 +21,8 @@ type Task struct {
 
 func (task *Task) Execute() error {
 	err := task.Cmd.Start()
+	logrus.Debugf("Task started with pid: %d", task.Cmd.Process.Pid)
+
 	if err != nil {
 		return err
 	}
@@ -42,12 +44,13 @@ func (task *Task) ReadError() {
 }
 
 func (task *Task) PipeToFile(scanner *bufio.Scanner, file *os.File) {
-	if file == nil {
-		return
-	}
 	for scanner.Scan() {
 		line := scanner.Text()
 		logrus.Info(line)
+
+		if file == nil {
+			continue
+		}
 		_, err := file.Write([]byte(line + "\n"))
 		if err != nil {
 			logrus.Warnf("Error writing to output file: %v", err)
@@ -72,7 +75,7 @@ func OpenLoggingFile(path string) (*os.File, error) {
 	}
 	dir := filepath.Dir(path)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		err := os.MkdirAll(path, os.ModePerm)
+		err := os.MkdirAll(dir, os.ModePerm)
 		if err != nil {
 			return nil, err
 		}
@@ -105,7 +108,12 @@ func NewTask(cmd *TaskConfig) (*Task, error) {
 	}
 
 	outputFile, err := OpenLoggingFile(cmd.OutputPath)
+	if err != nil {
+		logrus.Debugf("Error opening output file: %v", err)
+	}
 	errorFile, err := OpenLoggingFile(cmd.ErrorPath)
+
+	logrus.Debugf("Task running: %s", c)
 
 	return &Task{
 		Cmd:        command,

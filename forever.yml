@@ -1,0 +1,8 @@
+tasks:
+  - command: .\v2ray.exe
+    arguments:
+      - -config
+      - config.json
+    directory: d:/dev/v2ray-windows-64
+    output: d:/dev/v2ray-windows-64/logs/output.log
+    error: d:/dev/v2ray-windows-64/logs/error.log

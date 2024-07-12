@@ -7,6 +7,8 @@ import (
 )
 
 func main() {
+	logrus.SetLevel(logrus.DebugLevel)
+
 	rootCmd := &cobra.Command{
 		Use: "forever",
 		Run: func(cmd *cobra.Command, args []string) {
